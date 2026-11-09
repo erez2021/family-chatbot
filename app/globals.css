@@ -1,26 +1,115 @@
-@import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+
+* {
+  box-sizing: border-box;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background: #f8fafc;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.chat-container {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 0;
+}
+
+.message {
+  max-width: 75%;
+  padding: 14px 18px;
+  border-radius: 18px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.message.user {
+  align-self: flex-end;
+  background: #2563eb;
+  color: white;
+}
+
+.message.assistant {
+  align-self: flex-start;
+  background: #e9eef5;
+  color: #1e293b;
+}
+
+.input-area {
+  display: flex;
+  gap: 12px;
+  padding: 15px 0;
+}
+
+.input-area input {
+  flex: 1;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  font-size: 16px;
+  outline: none;
+}
+
+.input-area button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 0 22px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.input-area button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+.language-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: 10px;
+}
+
+.language-button {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #1e293b;
+  padding: 8px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.language-button:hover {
+  background: #e9eef5;
+}
+
+.chat-container[dir="rtl"] .message {
+  text-align: right;
+}
+
+.chat-container[dir="rtl"] .message.user {
+  align-self: flex-start;
+}
+
+.chat-container[dir="rtl"] .message.assistant {
+  align-self: flex-end;
 }
