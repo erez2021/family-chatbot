@@ -10,6 +10,19 @@ type Message = {
 
 type Language = "he" | "en";
 
+
+const suggestedQuestions = {
+  he: [
+    "מה הכינויים של איתם? 🧸",
+    "איפה טיילנו בעולם? ✈️",
+  ],
+  en: [
+    "What are Itam's nicknames? 🧸",
+    "Which countries have we visited? ✈️",
+  ],
+};
+
+
 export default function Home() {
   const [language, setLanguage] = useState<Language>("he");
   const [messages, setMessages] = useState<Message[]>([
@@ -23,67 +36,77 @@ export default function Home() {
 
   const isHebrew = language === "he";
 
-  async function sendMessage(e: FormEvent) {
-    e.preventDefault();
-    if (!input.trim() || loading) return;
 
-    const updatedMessages: Message[] = [
-      ...messages,
-      { role: "user", content: input.trim() },
-    ];
+async function sendMessage(text: string) {
+  if (!text.trim() || loading) return;
 
-    setMessages(updatedMessages);
-    setInput("");
-    setLoading(true);
+  const updatedMessages: Message[] = [
+    ...messages,
+    { role: "user", content: text.trim() },
+  ];
 
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: updatedMessages,
-          language,
-        }),
-      });
+  setMessages(updatedMessages);
+  setInput("");
+  setLoading(true);
 
-      if (!response.ok) throw new Error("API error");
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: updatedMessages,
+        language,
+      }),
+    });
 
-      const data = await response.json();
+    if (!response.ok) throw new Error("API error");
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: data.reply },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: isHebrew
-            ? "מצטער, משהו השתבש."
-            : "Sorry, something went wrong.",
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+    const data = await response.json();
+
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: data.reply },
+    ]);
+  } catch {
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content: isHebrew
+          ? "מצטער, משהו השתבש."
+          : "Sorry, something went wrong.",
+      },
+    ]);
+  } finally {
+    setLoading(false);
   }
+}
 
-  function changeLanguage() {
-    setLanguage((prev) => (prev === "he" ? "en" : "he"));
-  }
+
 
   return (
     <main className="chat-container" dir={isHebrew ? "rtl" : "ltr"}>
-      <div className="language-bar">
-        <button
-          className="language-button"
-          onClick={changeLanguage}
-          type="button"
-        >
-          {isHebrew ? "English" : "עברית"}
-        </button>
-      </div>
+
+<div className="language-bar">
+  <button
+    type="button"
+    className={`language-button ${isHebrew ? "active" : ""}`}
+    onClick={() => setLanguage("he")}
+    aria-pressed={isHebrew}
+  >
+    עברית
+  </button>
+
+  <button
+    type="button"
+    className={`language-button ${!isHebrew ? "active" : ""}`}
+    onClick={() => setLanguage("en")}
+    aria-pressed={!isHebrew}
+  >
+    English
+  </button>
+</div>
+
 
       <div className="messages">
         {messages.map((message, index) => (
@@ -91,9 +114,37 @@ export default function Home() {
             key={index}
             className={`message ${message.role}`}
           >
-            {message.content}
+           {index === 0 && messages.length === 1
+  ? isHebrew
+    ? "שלום! מה תרצו לדעת על המשפחה שלנו? 😊"
+    : "Hi! What would you like to know about our family? 😊"
+  : message.content}
           </div>
         ))}
+
+{messages.length === 1 && (
+  <div className="suggestions">
+    <p className="suggestions-title">
+      {isHebrew
+        ? "אפשר להתחיל עם אחת מהשאלות:"
+        : "Try one of these questions:"}
+    </p>
+
+    <div className="suggestions-grid">
+      {suggestedQuestions[language].map((question) => (
+        <button
+          key={question}
+          type="button"
+          className="suggestion-button"
+          onClick={() => sendMessage(question)}
+          disabled={loading}
+        >
+          {question}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
 
         {loading && (
           <div className="message assistant">
@@ -102,7 +153,13 @@ export default function Home() {
         )}
       </div>
 
-      <form className="input-area" onSubmit={sendMessage}>
+      <form
+  className="input-area"
+  onSubmit={(e) => {
+    e.preventDefault();
+    sendMessage(input);
+  }}
+>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
